@@ -1,10 +1,13 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
+using TMPro;
 
 public class DatabaseComunicator : MonoBehaviour
 {
     public int queryID;
+
+    [SerializeField] private TextMeshProUGUI text;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -27,9 +30,9 @@ public class DatabaseComunicator : MonoBehaviour
         {
             // Show results as text
             Debug.Log(www.downloadHandler.text);
+            text.text = www.downloadHandler.text;
             //UpdateQuestionUI(www.downloadHandler.text);
         }
 
-        www.
     }
 }
