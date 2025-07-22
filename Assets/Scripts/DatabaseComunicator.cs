@@ -27,7 +27,7 @@ public class DatabaseComunicator : MonoBehaviour
 
     async void GetText()
     {
-        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/" + queryID);
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetQuestion_" + queryID);
         Debug.Log("waiting for response");
         await www.SendWebRequest();
         Debug.Log("got response");
