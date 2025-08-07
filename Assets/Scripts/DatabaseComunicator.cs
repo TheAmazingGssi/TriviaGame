@@ -8,10 +8,9 @@ public class DatabaseComunicator : MonoBehaviour
 {
     public int queryID;
 
-    [SerializeField] private TextMeshProUGUI questionText;
-    [SerializeField] private ButtonHandler[] buttons;
-
     private Question question;
+
+
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -19,7 +18,7 @@ public class DatabaseComunicator : MonoBehaviour
     {
         //StartCoroutine(GetText());
         GetText();
-        foreach (var button in buttons)
+        foreach (var button in QuizUIManager.Instance.buttons)
         {
             button.OnButtonClick += OnButtonClick;
         }
@@ -39,26 +38,32 @@ public class DatabaseComunicator : MonoBehaviour
         else
         {
             // Show results as text
-            
             question = JsonUtility.FromJson<Question>(www.downloadHandler.text);
-            Debug.Log(question);
-            questionText.text = question.questionText;
-            buttons[0].text.text = question.answer1Text;
-            buttons[1].text.text = question.answer2Text;
-            buttons[2].text.text = question.answer3Text;
-            buttons[3].text.text = question.answer4Text;
-
-           
-            //UpdateQuestionUI(www.downloadHandler.text);
+            QuizUIManager.Instance.SetQuestionText(question);
         }
 
     }
 
     private void OnButtonClick(int id)
     {
+        //pull information of the other player from server
+        bool enemyIsStillStrategizing = true;
+
+        if (enemyIsStillStrategizing)
+        {
+            QuizUIManager.Instance.OpenWaitingPanel();
+            //raise flag to start polling for if the enemy answered
+        }
+        else
+        {
+            queryID++;
+            GetText();
+        }
+
         if (id == question.correctAnswer - 1)
         {
             // success
+            //add score to player
             Debug.Log("GREAT SUCCESS");
         }
         else
@@ -66,5 +71,6 @@ public class DatabaseComunicator : MonoBehaviour
             //failure
             Debug.Log("WRONG");
         }
+        //push data into the server
     }
 }
