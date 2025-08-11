@@ -553,7 +553,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 623423062}
-  - component: {fileID: 623423061}
   - component: {fileID: 623423063}
   m_Layer: 0
   m_Name: ui manager + comunicator
@@ -562,19 +561,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &623423061
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 623423060}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b27b19b2e699bd4e9504172b687ea75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  queryID: 1
 --- !u!4 &623423062
 Transform:
   m_ObjectHideFlags: 0

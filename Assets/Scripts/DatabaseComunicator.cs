@@ -1,35 +1,40 @@
+using System;
 using System.Collections;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class DatabaseComunicator : MonoBehaviour
+static public class DatabaseComunicator
 {
-    public int queryID;
-
-    private Question question;
-
+    static public int queryID = -1;
+    static public Question ActiveQuestion;
 
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    static async public Task<int> EnterSelfToDatabase(string nameInput)
     {
-        //StartCoroutine(GetText());
-        GetText();
-        foreach (var button in QuizUIManager.Instance.buttons)
-        {
-            button.OnButtonClick += OnButtonClick;
-        }
-    }
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/AddPlayer_" + nameInput);
+        await www.SendWebRequest();
+        int myId = -1;
 
-    async void GetText()
+        if (www.result == UnityWebRequest.Result.ConnectionError)
+        {
+            Debug.Log(www.error);
+        }
+        else
+        {
+            myId = int.Parse(www.downloadHandler.text);
+        }
+        return myId;
+    }
+    static async public Task<Question> GetQuestion()
     {
         UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetQuestion_" + queryID);
         Debug.Log("waiting for response");
         await www.SendWebRequest();
         Debug.Log("got response");
+        Question question = new Question();
 
         if (www.result == UnityWebRequest.Result.ConnectionError)
         {
@@ -38,39 +43,39 @@ public class DatabaseComunicator : MonoBehaviour
         else
         {
             // Show results as text
-            question = JsonUtility.FromJson<Question>(www.downloadHandler.text);
-            QuizUIManager.Instance.SetQuestionText(question);
+            ActiveQuestion = JsonUtility.FromJson<Question>(www.downloadHandler.text);
+            question = ActiveQuestion;
         }
-
+        return question;
     }
-
-    private void OnButtonClick(int id)
+    //the bool in this tuple represent another player with the active tag was found
+    static async public Task<Tuple<bool, PlayerInformation>> CheckRival(int myID)
     {
-        //pull information of the other player from server
-        bool enemyIsStillStrategizing = true;
-
-        if (enemyIsStillStrategizing)
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetWaitingPlayer_" + myID);
+        await www.SendWebRequest();
+        bool success = false;
+        PlayerInformation rivalInfo = null;
+        if (www.result == UnityWebRequest.Result.ConnectionError)
         {
-            QuizUIManager.Instance.OpenWaitingPanel();
-            //raise flag to start polling for if the enemy answered
+            Debug.Log(www.error);
         }
         else
         {
-            queryID++;
-            GetText();
+            rivalInfo = JsonUtility.FromJson<PlayerInformation>(www.downloadHandler.text);
+            if(rivalInfo.Name != null)
+                success = true;
         }
-
-        if (id == question.correctAnswer - 1)
-        {
-            // success
-            //add score to player
-            Debug.Log("GREAT SUCCESS");
-        }
-        else
-        {
-            //failure
-            Debug.Log("WRONG");
-        }
-        //push data into the server
+        return new Tuple<bool, PlayerInformation>(success, rivalInfo);
     }
+    static async public void UpdateQuestionProgression(int myID, int currentQuestion)
+    {
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/UpdatePlayerQuestion_" + myID + "_" + currentQuestion);
+        await www.SendWebRequest();
+    }
+    static async public void UpdatePlayerScore(int myID, int score, float thinkingTime)
+    {
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/UpdatePlayerScore_" + myID + "_" + score + "_" + thinkingTime);
+        await www.SendWebRequest();
+    }
+
 }

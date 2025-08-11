@@ -21,7 +21,12 @@ public class QuizUIManager : MonoBehaviour
             return;
         }
         Instance = this;
-        
+
+        GameManager.Instance.GetNewQuestion();
+        foreach (var button in buttons)
+        {
+            button.OnButtonClick += GameManager.Instance.OnAnswerClick;
+        }
     }
     public void OpenWaitingPanel()
     {
