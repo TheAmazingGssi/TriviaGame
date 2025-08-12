@@ -5,6 +5,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
+using static System.Net.WebRequestMethods;
 
 static public class DatabaseComunicator
 {
@@ -31,9 +32,7 @@ static public class DatabaseComunicator
     static async public Task<Question> GetQuestion()
     {
         UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetQuestion_" + queryID);
-        Debug.Log("waiting for response");
         await www.SendWebRequest();
-        Debug.Log("got response");
         Question question = new Question();
 
         if (www.result == UnityWebRequest.Result.ConnectionError)
@@ -49,9 +48,10 @@ static public class DatabaseComunicator
         return question;
     }
     //the bool in this tuple represent another player with the active tag was found
-    static async public Task<Tuple<bool, PlayerInformation>> CheckRival(int myID)
+    static async public Task<Tuple<bool, PlayerInformation>> CheckRival(int myID, int currentQuestion)
     {
-        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetWaitingPlayer_" + myID);
+        int nextQuestion = currentQuestion + 1;
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetWaitingPlayer_" + myID + "_" + nextQuestion);
         await www.SendWebRequest();
         bool success = false;
         PlayerInformation rivalInfo = null;
@@ -62,7 +62,7 @@ static public class DatabaseComunicator
         else
         {
             rivalInfo = JsonUtility.FromJson<PlayerInformation>(www.downloadHandler.text);
-            if(rivalInfo.Name != null)
+            if (rivalInfo.Name != null)
                 success = true;
         }
         return new Tuple<bool, PlayerInformation>(success, rivalInfo);
@@ -70,12 +70,49 @@ static public class DatabaseComunicator
     static async public void UpdateQuestionProgression(int myID, int currentQuestion)
     {
         UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/UpdatePlayerQuestion_" + myID + "_" + currentQuestion);
+
         await www.SendWebRequest();
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError(www.error);
+        }
     }
     static async public void UpdatePlayerScore(int myID, int score, float thinkingTime)
     {
         UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/UpdatePlayerScore_" + myID + "_" + score + "_" + thinkingTime);
         await www.SendWebRequest();
     }
+    static async public void TurnOnWaitingFlag(int myID)
+    {
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/MakePlayerWait_" + myID);
 
+        await www.SendWebRequest();
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError(www.error);
+        }
+    }
+    static async public Task<int> GetQuestionAmount()
+    {
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/GetQuestionAmount");
+
+        await www.SendWebRequest();
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError(www.error);
+            return -1;
+        }
+        return int.Parse(www.downloadHandler.text);
+    }
+
+    static async public void DeactivateSelf(int myID)
+    {
+        UnityWebRequest www = UnityWebRequest.Get("https://localhost:7106/api/Trivia/UpdatePlayerProgress_" + myID + "_false");
+
+        await www.SendWebRequest();
+        if (www.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError(www.error);
+        }
+    }
 }

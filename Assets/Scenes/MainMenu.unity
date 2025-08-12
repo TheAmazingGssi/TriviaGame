@@ -804,7 +804,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 135948742}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: StartGameButton
+        m_MethodName: ReadyPlayer
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
